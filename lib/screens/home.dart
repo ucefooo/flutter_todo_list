@@ -3,10 +3,16 @@ import 'package:flutter_application_1/constants/colors.dart';
 import 'package:flutter_application_1/model/todo.dart';
 import 'package:flutter_application_1/widgets/todo_item.dart';
 
-class Home extends StatelessWidget {
-  Home({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
 
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
   final todosList = ToDo.todoList();
+  final todocontroller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -23,30 +29,102 @@ class Home extends StatelessWidget {
                     child: ListView(
                       children: [
                         Container(
-                          margin:const EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             top: 50,
                             bottom: 20,
                           ),
-                          child: const Text(
-                            'All Todos',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            )
-                          ),
+                          child: const Text('All Todos',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                              )),
                         ),
                         for (ToDo todoo in todosList)
-                          ToDoItem(todo:todoo)
+                          ToDoItem(
+                            todo: todoo,
+                            onToDoChanged: _handleToDoChange,
+                            onDeleteItem: _deleteToDoItem,
+                          )
                       ],
                     ),
                   )
                 ],
-              )
-              ),
-              Align()
+              )),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Row(
+              children: [
+                Expanded(
+                    child: Container(
+                  margin: const EdgeInsets.only(bottom: 20, right: 20, left: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: Offset(0.0, 0.0),
+                        blurRadius: 10.0,
+                        spreadRadius: 0.0,
+                      )
+                    ],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextField(
+                    controller: todocontroller,
+                    decoration: const InputDecoration(
+                        hintText: 'Add a new task', border: InputBorder.none),
+                  ),
+                )),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20, right: 20),
+                  child: ElevatedButton(
+                    onPressed: () => {
+                      print('add new task'),
+                      print('text: ${todocontroller.text}'),
+                      addToDoItem(todocontroller.text)
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: tdBlue,
+                      minimumSize: const Size(60, 60),
+                      elevation: 10,
+                    ),
+                    child: const Text(
+                      '+',
+                      style: TextStyle(
+                          fontSize: 40,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  void _handleToDoChange(ToDo todo) {
+    setState(() {
+      todo.isDone = !todo.isDone;
+    });
+  }
+
+  void _deleteToDoItem(String id) {
+    setState(() {
+      todosList.removeWhere((element) => element.id == id);
+    });
+  }
+
+  void addToDoItem(String todoText) {
+    setState(() {
+      todosList.add(ToDo(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          todoText: todoText));
+    });
+    todocontroller.clear();
   }
 
   Widget searchBox() {
