@@ -12,7 +12,14 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final todosList = ToDo.todoList();
+  List<ToDo> found = [];
   final todocontroller = TextEditingController();
+
+  @override
+  void initState() {
+    found = todosList;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +46,7 @@ class _HomeState extends State<Home> {
                                 fontWeight: FontWeight.w500,
                               )),
                         ),
-                        for (ToDo todoo in todosList)
+                        for (ToDo todoo in found.reversed)
                           ToDoItem(
                             todo: todoo,
                             onToDoChanged: _handleToDoChange,
@@ -56,8 +63,10 @@ class _HomeState extends State<Home> {
               children: [
                 Expanded(
                     child: Container(
-                  margin: const EdgeInsets.only(bottom: 20, right: 20, left: 20),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  margin:
+                      const EdgeInsets.only(bottom: 20, right: 20, left: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     boxShadow: const [
@@ -116,6 +125,9 @@ class _HomeState extends State<Home> {
     setState(() {
       todosList.removeWhere((element) => element.id == id);
     });
+    setState(() {
+      found.removeWhere((element) => element.id == id);
+    });
   }
 
   void addToDoItem(String todoText) {
@@ -127,12 +139,28 @@ class _HomeState extends State<Home> {
     todocontroller.clear();
   }
 
+  void runfilter(String query) {
+    List<ToDo> _found = [];
+    if (query.isEmpty) {
+      _found = todosList;
+    } else {
+      _found = todosList
+          .where((element) =>
+              element.todoText!.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+    setState(() {
+        found = _found;
+      });
+  }
+
   Widget searchBox() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.circular(20)),
-      child: const TextField(
+      child: TextField(
+        onChanged: (value) => runfilter(value),
         decoration: InputDecoration(
             contentPadding: EdgeInsets.all(0),
             prefixIcon: Icon(Icons.search, color: tdBlack, size: 20),
